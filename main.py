@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo
 
 KST = ZoneInfo("Asia/Seoul")
 PLACES_FILE = Path(__file__).with_name("places.json")
+MEAL_OFFSETS = {"lunch": 0, "dinner": 1}
+MEAL_LABELS = {"lunch": "점심", "dinner": "저녁"}
 
 
 def load_places(filepath=PLACES_FILE):
@@ -42,11 +44,19 @@ def choose_date(preview_date, generated_at):
     return preview_date if preview_date is not None else generated_at.astimezone(KST).date()
 
 
-def pick_for_category(data, category_index, target_date):
+def choose_meal(explicit_meal, generated_at):
+    """명시하지 않으면 한국시간 16시를 기준으로 점심/저녁을 자동 판단합니다."""
+    if explicit_meal is not None:
+        return explicit_meal
+    return "lunch" if generated_at.astimezone(KST).hour < 16 else "dinner"
+
+
+def pick_for_category(data, category_index, target_date, meal):
     day = target_date.toordinal()
     category = data["categories"][category_index]
     items = category["items"]
-    index = (day + category_index * 5) % len(items)
+    offset = category_index * 5 + MEAL_OFFSETS[meal] * 4
+    index = (day + offset) % len(items)
     place = items[index]
     return {
         "name": category["name"],
@@ -58,11 +68,12 @@ def pick_for_category(data, category_index, target_date):
     }
 
 
-def generate_html(data, target_date, generated_at, is_preview=False, environment=None):
+def generate_html(data, target_date, generated_at, meal, is_preview=False, environment=None):
     environment = os.environ if environment is None else environment
     generated_kst = generated_at.astimezone(KST)
-    picks = [pick_for_category(data, i, target_date) for i in range(len(data["categories"]))]
-    mode_label = "날짜 미리보기" if is_preview else "한국 날짜 기준"
+    picks = [pick_for_category(data, i, target_date, meal) for i in range(len(data["categories"]))]
+    meal_label = MEAL_LABELS[meal]
+    mode_label = "날짜 미리보기" if is_preview else f"한국 날짜 기준 · {meal_label}"
     preview_note = '<p class="preview-note">선택한 날짜의 맛집을 확인하는 화면입니다.</p>' if is_preview else ""
     source = data.get("source", {})
     total_places = sum(len(c["items"]) for c in data["categories"])
@@ -184,12 +195,12 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
 <body>
   <main class="container">
     <p class="eyebrow">HUFS Gourmet Roulette</p>
-    <h1>오늘 뭐 먹지?</h1>
-    <p class="subtitle">외대 정문·후문 상권 실제 맛집 데이터를 날짜 기준으로 골라줍니다.</p>
+    <h1>{meal_label} 뭐 먹지?</h1>
+    <p class="subtitle">외대 정문·후문 상권 실제 맛집 데이터를 점심·저녁 시간대에 맞춰 골라줍니다.</p>
     <div class="stat-row">
       <span class="stat">총 <strong>{total_places}</strong>곳</span>
       <span class="stat"><strong>{len(picks)}</strong>개 카테고리</span>
-      <span class="stat">매일 <strong>자동 갱신</strong></span>
+      <span class="stat">하루 <strong>2번</strong> 자동 갱신</span>
     </div>
     <div class="date-badge"><time id="selected-date" datetime="{target_date.isoformat()}">{target_date.isoformat()}</time><span>{mode_label}</span></div>
     {preview_note}
@@ -337,18 +348,20 @@ def atomic_write(output, content):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="외대 맛집 지도 데이터로 오늘의 맛집 룰렛을 생성합니다.")
     parser.add_argument("--date", type=parse_preview_date, help="날짜 미리보기: YYYY-MM-DD")
+    parser.add_argument("--meal", choices=["lunch", "dinner"], help="비우면 한국시간 기준 자동 판단 (16시 이전=점심)")
     parser.add_argument("--output", default="index.html", type=Path, help="출력 HTML 경로")
     args = parser.parse_args(argv)
     try:
         generated_at = datetime.now(KST)
         target_date = choose_date(args.date, generated_at)
+        meal = choose_meal(args.meal, generated_at)
         data = load_places()
-        html = generate_html(data, target_date, generated_at, is_preview=args.date is not None)
+        html = generate_html(data, target_date, generated_at, meal, is_preview=args.date is not None)
         atomic_write(args.output, html)
     except (OSError, ValueError) as error:
         print(f"생성 실패: {error}", file=sys.stderr)
         return 1
-    print(f"카테고리 {len(data['categories'])}개 · 선택 날짜 {target_date}")
+    print(f"카테고리 {len(data['categories'])}개 · 선택 날짜 {target_date} · {MEAL_LABELS[meal]}")
     print(f"HTML 생성 완료: {args.output}")
     return 0
 

@@ -10,9 +10,14 @@ on:
         type: string
         required: false
         default: ''
-  # 수동 배포 성공 후 아래 두 줄의 #을 지워 예약을 켭니다.
+      meal:
+        description: '점심/저녁 강제 지정 (auto면 한국시간 기준 자동 판단)'
+        type: choice
+        options: ['auto', 'lunch', 'dinner']
+        default: 'auto'
   schedule:
-    - cron: '17 23 * * *'  # UTC 23:17 = 다음 날 한국시간 08:17, 매일
+    - cron: '30 1 * * *'  # UTC 01:30 = 한국시간 10:30, 점심 갱신
+    - cron: '30 7 * * *'  # UTC 07:30 = 한국시간 16:30, 저녁 갱신
 
 permissions:
   contents: read
@@ -37,12 +42,16 @@ jobs:
       - name: Generate daily page
         env:
           PREVIEW_DATE: ${{ inputs.preview_date || '' }}
+          MEAL: ${{ inputs.meal || 'auto' }}
         run: |
+          ARGS="--output _site/index.html"
           if [ -n "$PREVIEW_DATE" ]; then
-            python main.py --output _site/index.html --date "$PREVIEW_DATE"
-          else
-            python main.py --output _site/index.html
+            ARGS="$ARGS --date $PREVIEW_DATE"
           fi
+          if [ "$MEAL" != "auto" ] && [ -n "$MEAL" ]; then
+            ARGS="$ARGS --meal $MEAL"
+          fi
+          python main.py $ARGS
       - name: Configure Pages
         uses: actions/configure-pages@v6
       - name: Upload Pages artifact
