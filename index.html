@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="한중일양식 중 골라 보는 오늘의 메뉴 추천">
+  <title>오늘의 메뉴 추천</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: dark; --accent: #6ee7b7; }
+    body { margin: 0; min-height: 100vh; padding: 42px 18px 30px;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #182235); color: #f1f5f9;
+      display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 640px; text-align: center; }
+    .eyebrow { font-size: 11px; letter-spacing: 3px; color: var(--accent); margin: 0 0 12px; }
+    h1 { font-size: 27px; font-weight: 650; margin: 0 0 20px; letter-spacing: -1px; }
+    .date-badge { display: inline-flex; gap: 13px; align-items: center; flex-wrap: wrap; justify-content: center;
+      padding: 9px 20px; border: 1px solid #ffffff26; border-radius: 30px; color: #cbd5e1;
+      background: #ffffff08; font-size: 13px; margin-bottom: 22px; }
+    .mode { color: var(--accent); font-size: 12px; }
+    .preview-note { margin: -8px 0 20px; color: #d8b4fe; font-size: 13px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 22px; }
+    .tab { font: inherit; font-size: 14px; padding: 10px 22px; border-radius: 20px;
+      border: 1px solid #ffffff26; background: #ffffff08; color: #f1f5f9; cursor: pointer; }
+    .tab[aria-selected="true"] { background: var(--accent); color: #14121f; border-color: var(--accent); font-weight: 600; }
+    .panel { background: #ffffff07; border: 1px solid #ffffff1c; border-radius: 24px;
+      padding: 44px 30px; margin-bottom: 20px; box-shadow: 0 18px 45px #00000018; }
+    .dish { font-size: 30px; font-weight: 700; margin: 0 0 16px; word-break: keep-all; }
+    .panel.spinning .dish { color: var(--accent); }
+    @keyframes pop { 0% { transform: scale(1.18); } 100% { transform: scale(1); } }
+    .panel.landed .dish { animation: pop .35s ease; }
+    .comment { font-size: 15px; color: #cbd5e1; margin: 0 0 18px; line-height: 1.6; word-break: keep-all;
+      transition: opacity .2s ease; }
+    .panel.spinning .comment { opacity: .15; }
+    .respin { font: inherit; font-size: 13px; padding: 9px 18px; border-radius: 20px;
+      border: 1px solid #ffffff26; background: #ffffff08; color: #f1f5f9; cursor: pointer; }
+    .respin:hover { border-color: var(--accent); }
+    .respin:disabled { opacity: .5; cursor: default; }
+    footer { font-size: 11px; line-height: 1.9; color: #a8b4c8; }
+    footer p { margin: 3px 0; }
+    .generated { color: #d3dbea; }
+    @media (max-width: 600px) {
+      body { padding: 30px 14px 24px; } h1 { font-size: 23px; }
+      .panel { padding: 34px 22px; } .dish { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <p class="eyebrow">TODAY'S MENU PICK</p>
+    <h1>오늘의 메뉴 추천</h1>
+    <div class="date-badge"><time id="selected-date" datetime="2026-09-23">2026-09-23</time><span class="mode">한국 날짜 기준</span></div>
+    
+    <div class="tabs" role="tablist" aria-label="카테고리 선택">
+<button class="tab" data-target="cat-0" aria-selected="true">한식</button>
+<button class="tab" data-target="cat-1" aria-selected="false">중식</button>
+<button class="tab" data-target="cat-2" aria-selected="false">일식</button>
+<button class="tab" data-target="cat-3" aria-selected="false">양식</button>
+    </div>
+<section class="panel" id="cat-0" data-category="한식" role="tabpanel" >
+      <p class="dish" data-final="김치볶음밥">김치볶음밥</p>
+      <p class="comment">가볍게 먹기 좋은 메뉴예요.</p>
+      <button type="button" class="respin" data-target="cat-0">🎰 다시 뽑기</button>
+    </section>
+<section class="panel" id="cat-1" data-category="중식" role="tabpanel" hidden>
+      <p class="dish" data-final="양장피">양장피</p>
+      <p class="comment">국물/소스가 특히 기대되는 메뉴예요.</p>
+      <button type="button" class="respin" data-target="cat-1">🎰 다시 뽑기</button>
+    </section>
+<section class="panel" id="cat-2" data-category="일식" role="tabpanel" hidden>
+      <p class="dish" data-final="돈카츠">돈카츠</p>
+      <p class="comment">오늘 이거 먹으면 하루가 든든할 것 같아요.</p>
+      <button type="button" class="respin" data-target="cat-2">🎰 다시 뽑기</button>
+    </section>
+<section class="panel" id="cat-3" data-category="양식" role="tabpanel" hidden>
+      <p class="dish" data-final="버거">버거</p>
+      <p class="comment">무난하지만 실패 없는 선택이에요.</p>
+      <button type="button" class="respin" data-target="cat-3">🎰 다시 뽑기</button>
+    </section>
+    <script type="application/json" id="menu-pools">{"한식": ["제육볶음", "비빔밥", "김치찌개", "된장찌개", "불고기", "떡볶이", "순두부찌개", "잡채밥", "갈비탕", "냉면", "김치볶음밥", "닭갈비"], "중식": ["짜장면", "짬뽕", "탕수육", "마파두부", "볶음밥", "깐풍기", "팔보채", "양장피", "고추잡채", "군만두"], "일식": ["초밥", "라멘", "돈카츠", "우동", "규동", "오코노미야키", "가라아게", "카레라이스", "야키소바", "오니기리"], "양식": ["파스타", "피자", "스테이크", "리조또", "샐러드", "그라탕", "오믈렛", "버거", "감바스", "타코"]}</script>
+    <footer>
+      <p class="generated">마지막 생성 <time id="generated-at" datetime="2026-09-23T16:41:05+09:00">2026.09.23 16:41:05 KST</time></p>
+      <p id="build-info">로컬 생성본</p>
+      <p>한중일양식, 매일 자동으로 갱신되는 수업 예제</p>
+    </footer>
+  </main>
+  <script>
+    var pools = JSON.parse(document.getElementById("menu-pools").textContent);
+
+    function spin(panel) {
+      if (panel.classList.contains("spinning")) return;
+      var dishEl = panel.querySelector(".dish");
+      var button = panel.querySelector(".respin");
+      var finalDish = dishEl.dataset.final;
+      var items = pools[panel.dataset.category] || [finalDish];
+      var tick = 0;
+      var maxTicks = 16;
+      panel.classList.remove("landed");
+      panel.classList.add("spinning");
+      if (button) button.disabled = true;
+      (function step() {
+        tick++;
+        if (tick >= maxTicks) {
+          dishEl.textContent = finalDish;
+          panel.classList.remove("spinning");
+          panel.classList.add("landed");
+          if (button) button.disabled = false;
+          return;
+        }
+        dishEl.textContent = items[Math.floor(Math.random() * items.length)];
+        setTimeout(step, 40 + tick * 14);
+      })();
+    }
+
+    document.querySelectorAll(".tab").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        document.querySelectorAll(".tab").forEach(function (t) { t.setAttribute("aria-selected", "false"); });
+        document.querySelectorAll(".panel").forEach(function (p) { p.hidden = true; });
+        tab.setAttribute("aria-selected", "true");
+        var panel = document.getElementById(tab.dataset.target);
+        panel.hidden = false;
+        spin(panel);
+      });
+    });
+
+    document.querySelectorAll(".respin").forEach(function (button) {
+      button.addEventListener("click", function () {
+        spin(document.getElementById(button.dataset.target));
+      });
+    });
+
+    var firstPanel = document.querySelector(".panel:not([hidden])");
+    if (firstPanel) spin(firstPanel);
+  </script>
+</body>
+</html>
