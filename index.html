@@ -21,11 +21,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
       background: var(--bg); color: var(--text); display: flex; justify-content: center; }
     .container { width: 100%; max-width: 460px; text-align: center; }
-    .eyebrow { font-size: 12px; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
-    h1 { font-size: 24px; font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em; }
+    .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--accent);
+      margin: 0 0 10px; text-transform: uppercase; }
+    h1 { font-size: 34px; font-weight: 800; margin: 0 0 12px; letter-spacing: -0.03em; line-height: 1.15; }
+    .subtitle { font-size: 13.5px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }
+    .stat-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+    .stat { font-size: 11.5px; color: var(--muted); border: 1px solid var(--border); border-radius: 100px;
+      padding: 6px 13px; }
+    .stat strong { color: var(--text); }
     .date-badge { display: inline-flex; gap: 10px; align-items: center;
       padding: 7px 16px; border: 1px solid var(--border); border-radius: 100px; color: var(--muted);
-      font-size: 12.5px; margin-bottom: 28px; }
+      font-size: 12.5px; margin-bottom: 22px; }
     .date-badge time { color: var(--text); }
     .preview-note { margin: -18px 0 20px; color: var(--accent); font-size: 12.5px; }
     .tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 20px;
@@ -45,10 +51,15 @@
       border-top: 13px solid var(--text); z-index: 2; }
     .place { font-size: 22px; font-weight: 700; margin: 0 0 6px; word-break: keep-all;
       transition: opacity .2s ease; }
-    .note { font-size: 13.5px; color: var(--muted); margin: 0 0 20px; transition: opacity .2s ease; }
+    .note { font-size: 13.5px; color: var(--accent); font-weight: 600; margin: 0 0 14px; transition: opacity .2s ease; }
+    .meta { display: flex; flex-direction: column; gap: 4px; margin: 0 0 20px;
+      transition: opacity .2s ease; }
+    .meta-row { font-size: 12px; color: var(--muted); }
+    .meta-row.hours::before { content: "🕐 "; }
+    .meta-row.address::before { content: "📍 "; }
     @keyframes settle { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
     .panel.landed .place { animation: settle .3s ease; }
-    .panel.spinning .place, .panel.spinning .note { opacity: .2; }
+    .panel.spinning .place, .panel.spinning .note, .panel.spinning .meta { opacity: .2; }
     .respin { font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
       border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
     .respin:hover { border-color: var(--accent); color: var(--accent); }
@@ -56,19 +67,27 @@
     footer { margin-top: 22px; font-size: 11.5px; line-height: 1.8; color: var(--muted); }
     footer p { margin: 2px 0; }
     footer a { color: var(--muted); }
+    footer .provenance { color: var(--text); font-weight: 600; }
     @media (max-width: 480px) {
       body { padding: 40px 14px; }
       .panel { padding: 24px 16px 22px; }
       .wheel-stage { width: 184px; height: 184px; }
       .wheel-slices text { font-size: 11px; }
+      h1 { font-size: 27px; }
       .place { font-size: 19px; }
     }
   </style>
 </head>
 <body>
   <main class="container">
-    <p class="eyebrow">오늘의 외대 맛집</p>
-    <h1>뭐 먹지, 룰렛으로 정하기</h1>
+    <p class="eyebrow">HUFS Gourmet Roulette</p>
+    <h1>오늘 뭐 먹지?</h1>
+    <p class="subtitle">외대 정문·후문 상권 실제 맛집 데이터를 날짜 기준으로 골라줍니다.</p>
+    <div class="stat-row">
+      <span class="stat">총 <strong>43</strong>곳</span>
+      <span class="stat"><strong>4</strong>개 카테고리</span>
+      <span class="stat">매일 <strong>자동 갱신</strong></span>
+    </div>
     <div class="date-badge"><time id="selected-date" datetime="2026-09-23">2026-09-23</time><span>한국 날짜 기준</span></div>
     
     <div class="tabs" role="tablist" aria-label="카테고리 선택">
@@ -84,6 +103,10 @@
       </div>
       <p class="place" data-final="이문족발">이문족발</p>
       <p class="note" data-final="족발 · 보쌈">족발 · 보쌈</p>
+      <div class="meta">
+        <span class="meta-row hours">14:00-24:00 (일 휴무)</span>
+        <span class="meta-row address">서울 동대문구 휘경로2길 5-12</span>
+      </div>
       <button type="button" class="respin" data-target="cat-0">다시 돌리기</button>
     </section>
 <section class="panel" id="cat-1" data-category="중식" data-final-index="7" role="tabpanel" hidden>
@@ -93,6 +116,10 @@
       </div>
       <p class="place" data-final="촨커">촨커</p>
       <p class="note" data-final="꿔바로우 · 마라샹궈">꿔바로우 · 마라샹궈</p>
+      <div class="meta">
+        <span class="meta-row hours">11:30-21:30 (일 휴무)</span>
+        <span class="meta-row address">서울 동대문구 이문로9길 105</span>
+      </div>
       <button type="button" class="respin" data-target="cat-1">다시 돌리기</button>
     </section>
 <section class="panel" id="cat-2" data-category="일식" data-final-index="10" role="tabpanel" hidden>
@@ -102,6 +129,10 @@
       </div>
       <p class="place" data-final="카빙당">카빙당</p>
       <p class="note" data-final="카레 · 돈가스">카레 · 돈가스</p>
+      <div class="meta">
+        <span class="meta-row hours">10:00-20:00 (일 휴무)</span>
+        <span class="meta-row address">서울 동대문구 이문로9가길 35</span>
+      </div>
       <button type="button" class="respin" data-target="cat-2">다시 돌리기</button>
     </section>
 <section class="panel" id="cat-3" data-category="양식" data-final-index="1" role="tabpanel" hidden>
@@ -111,11 +142,16 @@
       </div>
       <p class="place" data-final="샤로스톤">샤로스톤</p>
       <p class="note" data-final="스테이크">스테이크</p>
+      <div class="meta">
+        <span class="meta-row hours">11:00-21:00</span>
+        <span class="meta-row address">서울 동대문구 휘경로2가길 5</span>
+      </div>
       <button type="button" class="respin" data-target="cat-3">다시 돌리기</button>
     </section>
-    <script type="application/json" id="menu-pools">{"한식": [{"name": "송원", "note": "제육볶음 · 된장찌개"}, {"name": "왕송", "note": "갈비찜 · 찜닭"}, {"name": "39돈가스", "note": "돈가스"}, {"name": "옹골진치킨", "note": "치킨"}, {"name": "도란도란곱창", "note": "곱창"}, {"name": "이문동 신냉면", "note": "냉면 · 만두"}, {"name": "차돌풍 외대점", "note": "뚝배기불고기 · 김치찌개"}, {"name": "두끼 한국외대점", "note": "떡볶이"}, {"name": "신의주찹쌀순대와쭈꾸미", "note": "국밥 · 순댓국"}, {"name": "컵짱이야 외대본점", "note": "컵밥 · 닭강정"}, {"name": "이문족발", "note": "족발 · 보쌈"}, {"name": "일품춘천닭갈비", "note": "닭갈비"}, {"name": "알촌 경희외대점", "note": "알밥"}, {"name": "도읍지", "note": "김치찌개 · 두루치기"}], "중식": [{"name": "구기우육도삭면", "note": "도삭면"}, {"name": "영화장", "note": "짜장면 · 짬뽕"}, {"name": "헤이마오차이 외대점", "note": "마오차이"}, {"name": "홍콩반점0410 외대점", "note": "짜장면 · 탕수육"}, {"name": "탕화쿵푸 외대점", "note": "마라탕"}, {"name": "춘리마라탕 외대점", "note": "마라탕"}, {"name": "국빈", "note": "짜장면 · 짬뽕"}, {"name": "촨커", "note": "꿔바로우 · 마라샹궈"}, {"name": "향미중식당", "note": "마라샹궈 · 동파육"}, {"name": "만이 차이니즈퀴진", "note": "짬뽕 · 짜장면"}], "일식": [{"name": "영카츠", "note": "카츠 · 마제소바"}, {"name": "마루기", "note": "가츠동 · 규동"}, {"name": "우시라멘", "note": "라멘 · 규동"}, {"name": "카시와", "note": "라멘"}, {"name": "이상준초밥", "note": "초밥"}, {"name": "고씨네 한국외대점", "note": "카레"}, {"name": "기석일호", "note": "카레"}, {"name": "가치로아", "note": "카츠 · 우동"}, {"name": "카츠이로하", "note": "카츠"}, {"name": "모코모코 본점", "note": "소바 · 우동"}, {"name": "카빙당", "note": "카레 · 돈가스"}], "양식": [{"name": "브릴란테", "note": "파스타 · 피자"}, {"name": "샤로스톤", "note": "스테이크"}, {"name": "치보", "note": "파스타 · 리조또"}, {"name": "라구퀸", "note": "파스타"}, {"name": "언니네함바그", "note": "함박스테이크"}, {"name": "이상한떡볶이집", "note": "파스타 · 함박스테이크"}, {"name": "파치", "note": "파스타 · 치킨"}, {"name": "비스트로99", "note": "육회 · 파스타"}]}</script>
+    <script type="application/json" id="menu-pools">{"한식": [{"name": "송원", "note": "제육볶음 · 된장찌개", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 14"}, {"name": "왕송", "note": "갈비찜 · 찜닭", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 11"}, {"name": "39돈가스", "note": "돈가스", "hours": "10:00-20:30", "address": "서울 동대문구 휘경로2길 5-2"}, {"name": "옹골진치킨", "note": "치킨", "hours": "16:30-01:00", "address": "서울 동대문구 이문로28길 15"}, {"name": "도란도란곱창", "note": "곱창", "hours": "15:00-02:00", "address": "서울 동대문구 휘경로2길 5-10"}, {"name": "이문동 신냉면", "note": "냉면 · 만두", "hours": "10:30-20:00", "address": "서울 동대문구 휘경로 6-8"}, {"name": "차돌풍 외대점", "note": "뚝배기불고기 · 김치찌개", "hours": "12:00-22:30", "address": "서울 동대문구 이문로 108"}, {"name": "두끼 한국외대점", "note": "떡볶이", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 104 지하1층"}, {"name": "신의주찹쌀순대와쭈꾸미", "note": "국밥 · 순댓국", "hours": "10:00-24:00", "address": "서울 동대문구 휘경로 9"}, {"name": "컵짱이야 외대본점", "note": "컵밥 · 닭강정", "hours": "12:00-23:00 (일 휴무)", "address": "서울 동대문구 이문로 96-1"}, {"name": "이문족발", "note": "족발 · 보쌈", "hours": "14:00-24:00 (일 휴무)", "address": "서울 동대문구 휘경로2길 5-12"}, {"name": "일품춘천닭갈비", "note": "닭갈비", "hours": "12:00-24:00", "address": "서울 동대문구 휘경로3길 8"}, {"name": "알촌 경희외대점", "note": "알밥", "hours": "10:00-20:30 (토 휴무)", "address": "서울 동대문구 천장산로7길 10-3"}, {"name": "도읍지", "note": "김치찌개 · 두루치기", "hours": "10:30-21:00 (일 휴무)", "address": "서울 동대문구 회기로21길 38-1"}], "중식": [{"name": "구기우육도삭면", "note": "도삭면", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로 16"}, {"name": "영화장", "note": "짜장면 · 짬뽕", "hours": "11:30-21:00 (월 휴무)", "address": "서울 동대문구 휘경로 3-8"}, {"name": "헤이마오차이 외대점", "note": "마오차이", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로 18"}, {"name": "홍콩반점0410 외대점", "note": "짜장면 · 탕수육", "hours": "10:30-21:00", "address": "서울 동대문구 휘경로 17"}, {"name": "탕화쿵푸 외대점", "note": "마라탕", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로2길 3"}, {"name": "춘리마라탕 외대점", "note": "마라탕", "hours": "10:00-22:00 (토 휴무)", "address": "서울 동대문구 휘경로 14"}, {"name": "국빈", "note": "짜장면 · 짬뽕", "hours": "정보 확인 필요", "address": "서울 동대문구 휘경로5길 6"}, {"name": "촨커", "note": "꿔바로우 · 마라샹궈", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 이문로9길 105"}, {"name": "향미중식당", "note": "마라샹궈 · 동파육", "hours": "11:00-20:00 (일 휴무)", "address": "서울 동대문구 경희대로3길 6"}, {"name": "만이 차이니즈퀴진", "note": "짬뽕 · 짜장면", "hours": "11:00-20:00 (월·일 휴무)", "address": "서울 동대문구 천장산로 47"}], "일식": [{"name": "영카츠", "note": "카츠 · 마제소바", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로 3-13"}, {"name": "마루기", "note": "가츠동 · 규동", "hours": "11:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로28길 16"}, {"name": "우시라멘", "note": "라멘 · 규동", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 88-11"}, {"name": "카시와", "note": "라멘", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로2가길 4"}, {"name": "이상준초밥", "note": "초밥", "hours": "11:00-20:00 (토·일 휴무)", "address": "서울 동대문구 휘경로 12"}, {"name": "고씨네 한국외대점", "note": "카레", "hours": "11:00-20:30", "address": "서울 동대문구 휘경로 16"}, {"name": "기석일호", "note": "카레", "hours": "12:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로17길 39"}, {"name": "가치로아", "note": "카츠 · 우동", "hours": "11:00-21:30", "address": "서울 동대문구 망우로21길 63"}, {"name": "카츠이로하", "note": "카츠", "hours": "11:00-20:30 (일 휴무)", "address": "서울 동대문구 경희대로1가길 8"}, {"name": "모코모코 본점", "note": "소바 · 우동", "hours": "11:00-20:00", "address": "서울 동대문구 회기로 147"}, {"name": "카빙당", "note": "카레 · 돈가스", "hours": "10:00-20:00 (일 휴무)", "address": "서울 동대문구 이문로9가길 35"}], "양식": [{"name": "브릴란테", "note": "파스타 · 피자", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 휘경로 6-8"}, {"name": "샤로스톤", "note": "스테이크", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로2가길 5"}, {"name": "치보", "note": "파스타 · 리조또", "hours": "11:30-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로9길 3"}, {"name": "라구퀸", "note": "파스타", "hours": "11:30-21:30", "address": "서울 동대문구 회기로18길 16"}, {"name": "언니네함바그", "note": "함박스테이크", "hours": "11:00-21:00 (화 휴무)", "address": "서울 동대문구 회기로25길 59"}, {"name": "이상한떡볶이집", "note": "파스타 · 함박스테이크", "hours": "11:00-21:00 (토 휴무)", "address": "서울 동대문구 휘경로2가길 6"}, {"name": "파치", "note": "파스타 · 치킨", "hours": "11:00-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로 38"}, {"name": "비스트로99", "note": "육회 · 파스타", "hours": "17:00-24:00", "address": "서울 동대문구 회기로21길 6"}]}</script>
     <footer>
-      <p>마지막 생성 2026.09.23 16:56:04 KST</p>
+      <p class="provenance">로컬 생성본</p>
+      <p>마지막 생성 2026.09.23 17:07:52 KST</p>
       <p>장소 정보 출처: <a href="https://hufs-gourmet-map.notion.site/" target="_blank" rel="noopener">외대 맛집 지도</a> (한국외대 이탈리아어과 정서연)</p>
     </footer>
   </main>
@@ -166,6 +202,8 @@
       var idx = (typeof targetIndex === "number") ? targetIndex : parseInt(panel.dataset.finalIndex, 10);
       var placeEl = panel.querySelector(".place");
       var noteEl = panel.querySelector(".note");
+      var hoursEl = panel.querySelector(".meta .hours");
+      var addressEl = panel.querySelector(".meta .address");
       var button = panel.querySelector(".respin");
       var group = panel.querySelector(".wheel-slices");
 
@@ -194,6 +232,8 @@
       setTimeout(function () {
         placeEl.textContent = items[idx].name;
         noteEl.textContent = items[idx].note;
+        hoursEl.textContent = items[idx].hours || "";
+        addressEl.textContent = items[idx].address || "";
         panel.classList.remove("spinning");
         panel.classList.add("landed");
         if (button) button.disabled = false;

@@ -48,7 +48,14 @@ def pick_for_category(data, category_index, target_date):
     items = category["items"]
     index = (day + category_index * 5) % len(items)
     place = items[index]
-    return {"name": category["name"], "place": place["name"], "note": place["note"], "index": index}
+    return {
+        "name": category["name"],
+        "place": place["name"],
+        "note": place["note"],
+        "hours": place.get("hours", ""),
+        "address": place.get("address", ""),
+        "index": index,
+    }
 
 
 def generate_html(data, target_date, generated_at, is_preview=False, environment=None):
@@ -58,6 +65,16 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
     mode_label = "날짜 미리보기" if is_preview else "한국 날짜 기준"
     preview_note = '<p class="preview-note">선택한 날짜의 맛집을 확인하는 화면입니다.</p>' if is_preview else ""
     source = data.get("source", {})
+    total_places = sum(len(c["items"]) for c in data["categories"])
+    run_number = environment.get("GITHUB_RUN_NUMBER", "")
+    run_attempt = environment.get("GITHUB_RUN_ATTEMPT", "1")
+    commit = environment.get("GITHUB_SHA", "")
+    provenance = []
+    if run_number:
+        provenance.append(f"Actions 실행 #{escape(run_number)} · 시도 {escape(run_attempt)}")
+    if commit:
+        provenance.append(f"커밋 {escape(commit[:7])}")
+    provenance_text = " · ".join(provenance) if provenance else "로컬 생성본"
 
     tabs = "\n".join(
         f'<button class="tab" data-target="cat-{i}" aria-selected="{"true" if i == 0 else "false"}">{escape(p["name"])}</button>'
@@ -71,6 +88,10 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       </div>
       <p class="place" data-final="{escape(p['place'])}">{escape(p['place'])}</p>
       <p class="note" data-final="{escape(p['note'])}">{escape(p['note'])}</p>
+      <div class="meta">
+        <span class="meta-row hours">{escape(p['hours'])}</span>
+        <span class="meta-row address">{escape(p['address'])}</span>
+      </div>
       <button type="button" class="respin" data-target="cat-{i}">다시 돌리기</button>
     </section>'''
         for i, p in enumerate(picks)
@@ -103,11 +124,17 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
       background: var(--bg); color: var(--text); display: flex; justify-content: center; }}
     .container {{ width: 100%; max-width: 460px; text-align: center; }}
-    .eyebrow {{ font-size: 12px; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }}
-    h1 {{ font-size: 24px; font-weight: 700; margin: 0 0 18px; letter-spacing: -0.02em; }}
+    .eyebrow {{ font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--accent);
+      margin: 0 0 10px; text-transform: uppercase; }}
+    h1 {{ font-size: 34px; font-weight: 800; margin: 0 0 12px; letter-spacing: -0.03em; line-height: 1.15; }}
+    .subtitle {{ font-size: 13.5px; color: var(--muted); margin: 0 0 20px; line-height: 1.6; }}
+    .stat-row {{ display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }}
+    .stat {{ font-size: 11.5px; color: var(--muted); border: 1px solid var(--border); border-radius: 100px;
+      padding: 6px 13px; }}
+    .stat strong {{ color: var(--text); }}
     .date-badge {{ display: inline-flex; gap: 10px; align-items: center;
       padding: 7px 16px; border: 1px solid var(--border); border-radius: 100px; color: var(--muted);
-      font-size: 12.5px; margin-bottom: 28px; }}
+      font-size: 12.5px; margin-bottom: 22px; }}
     .date-badge time {{ color: var(--text); }}
     .preview-note {{ margin: -18px 0 20px; color: var(--accent); font-size: 12.5px; }}
     .tabs {{ display: flex; gap: 6px; justify-content: center; margin-bottom: 20px;
@@ -127,10 +154,15 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       border-top: 13px solid var(--text); z-index: 2; }}
     .place {{ font-size: 22px; font-weight: 700; margin: 0 0 6px; word-break: keep-all;
       transition: opacity .2s ease; }}
-    .note {{ font-size: 13.5px; color: var(--muted); margin: 0 0 20px; transition: opacity .2s ease; }}
+    .note {{ font-size: 13.5px; color: var(--accent); font-weight: 600; margin: 0 0 14px; transition: opacity .2s ease; }}
+    .meta {{ display: flex; flex-direction: column; gap: 4px; margin: 0 0 20px;
+      transition: opacity .2s ease; }}
+    .meta-row {{ font-size: 12px; color: var(--muted); }}
+    .meta-row.hours::before {{ content: "🕐 "; }}
+    .meta-row.address::before {{ content: "📍 "; }}
     @keyframes settle {{ 0% {{ transform: scale(1.08); }} 100% {{ transform: scale(1); }} }}
     .panel.landed .place {{ animation: settle .3s ease; }}
-    .panel.spinning .place, .panel.spinning .note {{ opacity: .2; }}
+    .panel.spinning .place, .panel.spinning .note, .panel.spinning .meta {{ opacity: .2; }}
     .respin {{ font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
       border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }}
     .respin:hover {{ border-color: var(--accent); color: var(--accent); }}
@@ -138,19 +170,27 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
     footer {{ margin-top: 22px; font-size: 11.5px; line-height: 1.8; color: var(--muted); }}
     footer p {{ margin: 2px 0; }}
     footer a {{ color: var(--muted); }}
+    footer .provenance {{ color: var(--text); font-weight: 600; }}
     @media (max-width: 480px) {{
       body {{ padding: 40px 14px; }}
       .panel {{ padding: 24px 16px 22px; }}
       .wheel-stage {{ width: 184px; height: 184px; }}
       .wheel-slices text {{ font-size: 11px; }}
+      h1 {{ font-size: 27px; }}
       .place {{ font-size: 19px; }}
     }}
   </style>
 </head>
 <body>
   <main class="container">
-    <p class="eyebrow">오늘의 외대 맛집</p>
-    <h1>뭐 먹지, 룰렛으로 정하기</h1>
+    <p class="eyebrow">HUFS Gourmet Roulette</p>
+    <h1>오늘 뭐 먹지?</h1>
+    <p class="subtitle">외대 정문·후문 상권 실제 맛집 데이터를 날짜 기준으로 골라줍니다.</p>
+    <div class="stat-row">
+      <span class="stat">총 <strong>{total_places}</strong>곳</span>
+      <span class="stat"><strong>{len(picks)}</strong>개 카테고리</span>
+      <span class="stat">매일 <strong>자동 갱신</strong></span>
+    </div>
     <div class="date-badge"><time id="selected-date" datetime="{target_date.isoformat()}">{target_date.isoformat()}</time><span>{mode_label}</span></div>
     {preview_note}
     <div class="tabs" role="tablist" aria-label="카테고리 선택">
@@ -159,6 +199,7 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
 {panels}
     <script type="application/json" id="menu-pools">{pools_json}</script>
     <footer>
+      <p class="provenance">{provenance_text}</p>
       <p>마지막 생성 {generated_kst.strftime('%Y.%m.%d %H:%M:%S')} KST</p>
       <p>장소 정보 출처: <a href="{escape(source.get('url', ''))}" target="_blank" rel="noopener">{escape(source.get('title', ''))}</a> ({escape(source.get('credit', ''))})</p>
     </footer>
@@ -210,6 +251,8 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       var idx = (typeof targetIndex === "number") ? targetIndex : parseInt(panel.dataset.finalIndex, 10);
       var placeEl = panel.querySelector(".place");
       var noteEl = panel.querySelector(".note");
+      var hoursEl = panel.querySelector(".meta .hours");
+      var addressEl = panel.querySelector(".meta .address");
       var button = panel.querySelector(".respin");
       var group = panel.querySelector(".wheel-slices");
 
@@ -238,6 +281,8 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       setTimeout(function () {{
         placeEl.textContent = items[idx].name;
         noteEl.textContent = items[idx].note;
+        hoursEl.textContent = items[idx].hours || "";
+        addressEl.textContent = items[idx].address || "";
         panel.classList.remove("spinning");
         panel.classList.add("landed");
         if (button) button.disabled = false;
