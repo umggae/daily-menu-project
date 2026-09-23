@@ -59,9 +59,10 @@ def pick_for_category(data, category_index, target_date):
     day = target_date.toordinal()
     category = data["categories"][category_index]
     items, comments = category["items"], data["comments"]
-    dish = items[(day + category_index * 5) % len(items)]
+    index = (day + category_index * 5) % len(items)
+    dish = items[index]
     comment = comments[(day + category_index * 7) % len(comments)]
-    return {"name": category["name"], "dish": dish, "comment": comment}
+    return {"name": category["name"], "dish": dish, "comment": comment, "index": index}
 
 
 def generate_html(data, target_date, generated_at, is_preview=False, environment=None):
@@ -88,15 +89,22 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
         for i, p in enumerate(picks)
     )
     panels = "\n".join(
-        f'''<section class="panel" id="cat-{i}" data-category="{escape(p['name'])}" role="tabpanel" {"" if i == 0 else "hidden"}>
+        f'''<section class="panel" id="cat-{i}" data-category="{escape(p['name'])}" data-final-index="{p['index']}" role="tabpanel" {"" if i == 0 else "hidden"}>
+      <div class="wheel-stage">
+        <div class="pointer" aria-hidden="true"></div>
+        <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
+      </div>
       <p class="dish" data-final="{escape(p['dish'])}">{escape(p['dish'])}</p>
       <p class="comment">{escape(p['comment'])}</p>
-      <button type="button" class="respin" data-target="cat-{i}">🎰 다시 뽑기</button>
+      <button type="button" class="respin" data-target="cat-{i}">🎡 다시 돌리기</button>
     </section>'''
         for i, p in enumerate(picks)
     )
     pools_json = json.dumps(
-        {p["name"]: data["categories"][i]["items"] for i, p in enumerate(picks)},
+        {
+            "categories": {p["name"]: data["categories"][i]["items"] for i, p in enumerate(picks)},
+            "comments": data["comments"],
+        },
         ensure_ascii=False,
     ).replace("</", "<\\/")
 
@@ -127,14 +135,21 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
       border: 1px solid #ffffff26; background: #ffffff08; color: #f1f5f9; cursor: pointer; }}
     .tab[aria-selected="true"] {{ background: var(--accent); color: #14121f; border-color: var(--accent); font-weight: 600; }}
     .panel {{ background: #ffffff07; border: 1px solid #ffffff1c; border-radius: 24px;
-      padding: 44px 30px; margin-bottom: 20px; box-shadow: 0 18px 45px #00000018; }}
-    .dish {{ font-size: 30px; font-weight: 700; margin: 0 0 16px; word-break: keep-all; }}
-    .panel.spinning .dish {{ color: var(--accent); }}
+      padding: 34px 30px 30px; margin-bottom: 20px; box-shadow: 0 18px 45px #00000018; }}
+    .wheel-stage {{ position: relative; width: 220px; height: 220px; margin: 0 auto 22px; }}
+    .wheel {{ width: 100%; height: 100%; display: block; }}
+    .wheel-slices {{ transform-origin: 150px 150px; }}
+    .wheel-slices text {{ fill: #14121f; font-size: 15px; font-weight: 600; text-anchor: middle;
+      dominant-baseline: middle; }}
+    .pointer {{ position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent;
+      border-top: 16px solid var(--accent); z-index: 2; filter: drop-shadow(0 2px 3px #00000040); }}
+    .dish {{ font-size: 27px; font-weight: 700; margin: 0 0 14px; word-break: keep-all; transition: opacity .2s ease; }}
     @keyframes pop {{ 0% {{ transform: scale(1.18); }} 100% {{ transform: scale(1); }} }}
     .panel.landed .dish {{ animation: pop .35s ease; }}
     .comment {{ font-size: 15px; color: #cbd5e1; margin: 0 0 18px; line-height: 1.6; word-break: keep-all;
       transition: opacity .2s ease; }}
-    .panel.spinning .comment {{ opacity: .15; }}
+    .panel.spinning .dish, .panel.spinning .comment {{ opacity: .15; }}
     .respin {{ font: inherit; font-size: 13px; padding: 9px 18px; border-radius: 20px;
       border: 1px solid #ffffff26; background: #ffffff08; color: #f1f5f9; cursor: pointer; }}
     .respin:hover {{ border-color: var(--accent); }}
@@ -144,7 +159,9 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
     .generated {{ color: #d3dbea; }}
     @media (max-width: 600px) {{
       body {{ padding: 30px 14px 24px; }} h1 {{ font-size: 23px; }}
-      .panel {{ padding: 34px 22px; }} .dish {{ font-size: 25px; }}
+      .panel {{ padding: 28px 18px 26px; }} .dish {{ font-size: 22px; }}
+      .wheel-stage {{ width: 190px; height: 190px; }}
+      .wheel-slices text {{ font-size: 12px; }}
     }}
   </style>
 </head>
@@ -167,30 +184,87 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
   </main>
   <script>
     var pools = JSON.parse(document.getElementById("menu-pools").textContent);
+    var palette = ["#a78bfa", "#7dd3fc", "#a5b4fc", "#6ee7b7", "#f9a8d4", "#fcd34d",
+      "#fdba74", "#f87171", "#38bdf8", "#34d399", "#facc15", "#fb7185"];
+    var SVG_NS = "http://www.w3.org/2000/svg";
 
-    function spin(panel) {{
+    function slicePoint(cx, cy, r, deg) {{
+      var rad = (deg - 90) * Math.PI / 180;
+      return {{ x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }};
+    }}
+
+    function buildWheel(panel, items) {{
+      var group = panel.querySelector(".wheel-slices");
+      group.innerHTML = "";
+      var n = items.length;
+      var sliceAngle = 360 / n;
+      var cx = 150, cy = 150, r = 148, labelR = 100;
+      for (var i = 0; i < n; i++) {{
+        var start = i * sliceAngle;
+        var end = start + sliceAngle;
+        var p1 = slicePoint(cx, cy, r, start);
+        var p2 = slicePoint(cx, cy, r, end);
+        var largeArc = sliceAngle > 180 ? 1 : 0;
+        var path = document.createElementNS(SVG_NS, "path");
+        path.setAttribute("d", "M" + cx + "," + cy + " L" + p1.x + "," + p1.y +
+          " A" + r + "," + r + " 0 " + largeArc + ",1 " + p2.x + "," + p2.y + " Z");
+        path.setAttribute("fill", palette[i % palette.length]);
+        path.setAttribute("stroke", "#0f0c29");
+        path.setAttribute("stroke-width", "1.5");
+        group.appendChild(path);
+        var mid = start + sliceAngle / 2;
+        var lp = slicePoint(cx, cy, labelR, mid);
+        var text = document.createElementNS(SVG_NS, "text");
+        text.setAttribute("x", lp.x);
+        text.setAttribute("y", lp.y);
+        var label = items[i].length > 5 ? items[i].slice(0, 5) + "…" : items[i];
+        text.textContent = label;
+        group.appendChild(text);
+      }}
+    }}
+
+    function spin(panel, targetIndex) {{
       if (panel.classList.contains("spinning")) return;
+      var category = panel.dataset.category;
+      var items = pools.categories[category];
+      var idx = (typeof targetIndex === "number") ? targetIndex : parseInt(panel.dataset.finalIndex, 10);
       var dishEl = panel.querySelector(".dish");
+      var commentEl = panel.querySelector(".comment");
       var button = panel.querySelector(".respin");
-      var finalDish = dishEl.dataset.final;
-      var items = pools[panel.dataset.category] || [finalDish];
-      var tick = 0;
-      var maxTicks = 16;
+      var group = panel.querySelector(".wheel-slices");
+
+      if (!panel.dataset.built) {{
+        buildWheel(panel, items);
+        panel.dataset.built = "1";
+      }}
+
+      var sliceAngle = 360 / items.length;
+      var mid = idx * sliceAngle + sliceAngle / 2;
+      var current = parseFloat(group.dataset.rotation || "0");
+      var spins = 4 + Math.floor(Math.random() * 2);
+      var base = current + spins * 360;
+      var targetMod = (360 - mid) % 360;
+      var diff = ((targetMod - base) % 360 + 360) % 360;
+      var next = base + diff;
+
       panel.classList.remove("landed");
       panel.classList.add("spinning");
       if (button) button.disabled = true;
-      (function step() {{
-        tick++;
-        if (tick >= maxTicks) {{
-          dishEl.textContent = finalDish;
-          panel.classList.remove("spinning");
-          panel.classList.add("landed");
-          if (button) button.disabled = false;
-          return;
+
+      group.style.transition = "transform 3.1s cubic-bezier(.15,.65,.25,1)";
+      group.style.transform = "rotate(" + next + "deg)";
+      group.dataset.rotation = String(next);
+
+      var isManualReroll = typeof targetIndex === "number";
+      setTimeout(function () {{
+        dishEl.textContent = items[idx];
+        if (isManualReroll) {{
+          commentEl.textContent = pools.comments[Math.floor(Math.random() * pools.comments.length)];
         }}
-        dishEl.textContent = items[Math.floor(Math.random() * items.length)];
-        setTimeout(step, 40 + tick * 14);
-      }})();
+        panel.classList.remove("spinning");
+        panel.classList.add("landed");
+        if (button) button.disabled = false;
+      }}, 3150);
     }}
 
     document.querySelectorAll(".tab").forEach(function (tab) {{
@@ -206,7 +280,10 @@ def generate_html(data, target_date, generated_at, is_preview=False, environment
 
     document.querySelectorAll(".respin").forEach(function (button) {{
       button.addEventListener("click", function () {{
-        spin(document.getElementById(button.dataset.target));
+        var panel = document.getElementById(button.dataset.target);
+        var items = pools.categories[panel.dataset.category];
+        var randomIndex = Math.floor(Math.random() * items.length);
+        spin(panel, randomIndex);
       }});
     }});
 
