@@ -66,9 +66,6 @@
 <button class="tab" data-target="cat-1" aria-selected="false">중식</button>
 <button class="tab" data-target="cat-2" aria-selected="false">일식</button>
 <button class="tab" data-target="cat-3" aria-selected="false">양식</button>
-<button class="tab" data-target="cat-4" aria-selected="false">혼밥</button>
-<button class="tab" data-target="cat-5" aria-selected="false">데이트</button>
-<button class="tab" data-target="cat-6" aria-selected="false">부모님</button>
     </div>
 <section class="panel" id="cat-0" data-category="한식" data-final-index="10" role="tabpanel" >
       <div class="wheel-stage">
@@ -106,36 +103,9 @@
       <p class="comment">무난하지만 실패 없는 선택이에요.</p>
       <button type="button" class="respin" data-target="cat-3">🎡 다시 돌리기</button>
     </section>
-<section class="panel" id="cat-4" data-category="혼밥" data-final-index="2" role="tabpanel" hidden>
-      <div class="wheel-stage">
-        <div class="pointer" aria-hidden="true"></div>
-        <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
-      </div>
-      <p class="dish" data-final="즉석 도시락">즉석 도시락</p>
-      <p class="comment">호불호는 갈릴 수 있지만 도전해볼 만해요.</p>
-      <button type="button" class="respin" data-target="cat-4">🎡 다시 돌리기</button>
-    </section>
-<section class="panel" id="cat-5" data-category="데이트" data-final-index="7" role="tabpanel" hidden>
-      <div class="wheel-stage">
-        <div class="pointer" aria-hidden="true"></div>
-        <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
-      </div>
-      <p class="dish" data-final="한강 피크닉 도시락">한강 피크닉 도시락</p>
-      <p class="comment">오늘따라 유독 당길 수 있는 메뉴예요.</p>
-      <button type="button" class="respin" data-target="cat-5">🎡 다시 돌리기</button>
-    </section>
-<section class="panel" id="cat-6" data-category="부모님" data-final-index="2" role="tabpanel" hidden>
-      <div class="wheel-stage">
-        <div class="pointer" aria-hidden="true"></div>
-        <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
-      </div>
-      <p class="dish" data-final="전복죽 세트">전복죽 세트</p>
-      <p class="comment">친구한테 자랑하고 싶은 오늘의 메뉴예요.</p>
-      <button type="button" class="respin" data-target="cat-6">🎡 다시 돌리기</button>
-    </section>
-    <script type="application/json" id="menu-pools">{"categories": {"한식": ["제육볶음", "비빔밥", "김치찌개", "된장찌개", "불고기", "떡볶이", "순두부찌개", "잡채밥", "갈비탕", "냉면", "김치볶음밥", "닭갈비"], "중식": ["짜장면", "짬뽕", "탕수육", "마파두부", "볶음밥", "깐풍기", "팔보채", "양장피", "고추잡채", "군만두"], "일식": ["초밥", "라멘", "돈카츠", "우동", "규동", "오코노미야키", "가라아게", "카레라이스", "야키소바", "오니기리"], "양식": ["파스타", "피자", "스테이크", "리조또", "샐러드", "그라탕", "오믈렛", "버거", "감바스", "타코"], "혼밥": ["편의점 조합밥", "1인 라멘", "즉석 도시락", "김밥 한 줄 세트", "포장 초밥", "컵밥", "혼밥 돈까스집", "패스트푸드 세트", "학식 오늘의 메뉴", "배달 마라탕"], "데이트": ["파스타 레스토랑", "오마카세", "루프탑 다이닝", "브런치 카페", "이자카야 코스", "스테이크 하우스", "와인바 안주 세트", "한강 피크닉 도시락", "디저트 카페 투어", "야경 좋은 레스토랑"], "부모님": ["한정식", "갈비찜 정식", "전복죽 세트", "삼계탕", "코스요리", "떡갈비 정식", "한우 구이", "보리굴비 정식", "궁중요리 코스", "정갈한 반찬 백반"]}, "comments": ["오늘 이거 먹으면 하루가 든든할 것 같아요.", "줄 서서라도 먹을 가치 있는 메뉴예요.", "호불호는 갈릴 수 있지만 도전해볼 만해요.", "이 메뉴면 오후 수업도 든든하게 버틸 수 있어요.", "친구한테 자랑하고 싶은 오늘의 메뉴예요.", "국물/소스가 특히 기대되는 메뉴예요.", "밥 두 그릇은 각오해야 할 메뉴예요.", "무난하지만 실패 없는 선택이에요.", "이 메뉴, SNS에 올려도 손색없어요.", "오늘따라 유독 당길 수 있는 메뉴예요.", "가볍게 먹기 좋은 메뉴예요.", "든든하게 배 채우기 딱 좋은 메뉴예요."]}</script>
+    <script type="application/json" id="menu-pools">{"categories": {"한식": ["제육볶음", "비빔밥", "김치찌개", "된장찌개", "불고기", "떡볶이", "순두부찌개", "잡채밥", "갈비탕", "냉면", "김치볶음밥", "닭갈비"], "중식": ["짜장면", "짬뽕", "탕수육", "마파두부", "볶음밥", "깐풍기", "팔보채", "양장피", "고추잡채", "군만두"], "일식": ["초밥", "라멘", "돈카츠", "우동", "규동", "오코노미야키", "가라아게", "카레라이스", "야키소바", "오니기리"], "양식": ["파스타", "피자", "스테이크", "리조또", "샐러드", "그라탕", "오믈렛", "버거", "감바스", "타코"]}, "comments": ["오늘 이거 먹으면 하루가 든든할 것 같아요.", "줄 서서라도 먹을 가치 있는 메뉴예요.", "호불호는 갈릴 수 있지만 도전해볼 만해요.", "이 메뉴면 오후 수업도 든든하게 버틸 수 있어요.", "친구한테 자랑하고 싶은 오늘의 메뉴예요.", "국물/소스가 특히 기대되는 메뉴예요.", "밥 두 그릇은 각오해야 할 메뉴예요.", "무난하지만 실패 없는 선택이에요.", "이 메뉴, SNS에 올려도 손색없어요.", "오늘따라 유독 당길 수 있는 메뉴예요.", "가볍게 먹기 좋은 메뉴예요.", "든든하게 배 채우기 딱 좋은 메뉴예요."]}</script>
     <footer>
-      <p class="generated">마지막 생성 <time id="generated-at" datetime="2026-09-23T16:47:37+09:00">2026.09.23 16:47:37 KST</time></p>
+      <p class="generated">마지막 생성 <time id="generated-at" datetime="2026-09-23T16:51:16+09:00">2026.09.23 16:51:16 KST</time></p>
       <p id="build-info">로컬 생성본</p>
       <p>한중일양식, 매일 자동으로 갱신되는 수업 예제</p>
     </footer>
