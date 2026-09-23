@@ -39,8 +39,14 @@
     .tab { flex: 1; font: inherit; font-size: 13.5px; padding: 9px 0; border-radius: 9px;
       border: none; background: transparent; color: var(--muted); cursor: pointer; }
     .tab[aria-selected="true"] { background: var(--accent); color: #0c0d10; font-weight: 600; }
+    .area-filter { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+    .area-pill { font: inherit; font-size: 12.5px; padding: 6px 14px; border-radius: 100px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; }
+    .area-pill[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .area-note { font-size: 11px; color: var(--muted); margin: -14px 0 20px; }
     .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
       padding: 30px 24px 26px; }
+    .empty-state { color: var(--muted); font-size: 14px; padding: 40px 10px; margin: 0; }
     .wheel-stage { position: relative; width: 208px; height: 208px; margin: 0 auto 24px; }
     .wheel { width: 100%; height: 100%; display: block; }
     .wheel-slices { transform-origin: 150px 150px; }
@@ -60,9 +66,13 @@
     @keyframes settle { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
     .panel.landed .place { animation: settle .3s ease; }
     .panel.spinning .place, .panel.spinning .note, .panel.spinning .meta { opacity: .2; }
-    .respin { font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
-      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
-    .respin:hover { border-color: var(--accent); color: var(--accent); }
+    .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; transition: opacity .2s ease; }
+    .actions[hidden], .meta[hidden] { display: none; }
+    .panel.spinning .actions { opacity: .2; }
+    .respin, .map-link { font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
+      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer;
+      text-decoration: none; display: inline-block; }
+    .respin:hover, .map-link:hover { border-color: var(--accent); color: var(--accent); }
     .respin:disabled { opacity: .4; cursor: default; }
     footer { margin-top: 22px; font-size: 11.5px; line-height: 1.8; color: var(--muted); }
     footer p { margin: 2px 0; }
@@ -96,62 +106,85 @@
 <button class="tab" data-target="cat-2" aria-selected="false">일식</button>
 <button class="tab" data-target="cat-3" aria-selected="false">양식</button>
     </div>
-<section class="panel" id="cat-0" data-category="한식" data-final-index="0" role="tabpanel" >
+    <div class="area-filter" role="group" aria-label="지역 필터">
+      <button class="area-pill" data-area="all" aria-pressed="true">전체</button>
+<button class="area-pill" data-area="정문" aria-pressed="false">정문</button>
+<button class="area-pill" data-area="후문" aria-pressed="false">후문</button>
+<button class="area-pill" data-area="회기" aria-pressed="false">회기</button>
+    </div>
+    <p class="area-note">지역은 주소를 기준으로 정문·후문·회기로 임의 분류했어요.</p>
+<section class="panel" id="cat-0" data-category="한식" data-cat-index="0" data-day="739882" role="tabpanel" >
       <div class="wheel-stage">
         <div class="pointer" aria-hidden="true"></div>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
       </div>
+      <p class="empty-state" hidden>이 지역에는 등록된 한식 맛집이 없어요.</p>
       <p class="place" data-final="송원">송원</p>
       <p class="note" data-final="제육볶음 · 된장찌개">제육볶음 · 된장찌개</p>
       <div class="meta">
         <span class="meta-row hours">10:30-20:30 (토 휴무)</span>
         <span class="meta-row address">서울 동대문구 이문로28길 14</span>
       </div>
-      <button type="button" class="respin" data-target="cat-0">다시 돌리기</button>
+      <div class="actions">
+        <button type="button" class="respin" data-target="cat-0">다시 돌리기</button>
+        <a class="map-link" data-target="cat-0" href="https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%20%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC%20%EC%9D%B4%EB%AC%B8%EB%A1%9C28%EA%B8%B8%2014%20%EC%86%A1%EC%9B%90" target="_blank" rel="noopener">지도에서 보기</a>
+      </div>
     </section>
-<section class="panel" id="cat-1" data-category="중식" data-final-index="1" role="tabpanel" hidden>
+<section class="panel" id="cat-1" data-category="중식" data-cat-index="1" data-day="739882" role="tabpanel" hidden>
       <div class="wheel-stage">
         <div class="pointer" aria-hidden="true"></div>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
       </div>
+      <p class="empty-state" hidden>이 지역에는 등록된 중식 맛집이 없어요.</p>
       <p class="place" data-final="영화장">영화장</p>
       <p class="note" data-final="짜장면 · 짬뽕">짜장면 · 짬뽕</p>
       <div class="meta">
         <span class="meta-row hours">11:30-21:00 (월 휴무)</span>
         <span class="meta-row address">서울 동대문구 휘경로 3-8</span>
       </div>
-      <button type="button" class="respin" data-target="cat-1">다시 돌리기</button>
+      <div class="actions">
+        <button type="button" class="respin" data-target="cat-1">다시 돌리기</button>
+        <a class="map-link" data-target="cat-1" href="https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%20%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC%20%ED%9C%98%EA%B2%BD%EB%A1%9C%203-8%20%EC%98%81%ED%99%94%EC%9E%A5" target="_blank" rel="noopener">지도에서 보기</a>
+      </div>
     </section>
-<section class="panel" id="cat-2" data-category="일식" data-final-index="3" role="tabpanel" hidden>
+<section class="panel" id="cat-2" data-category="일식" data-cat-index="2" data-day="739882" role="tabpanel" hidden>
       <div class="wheel-stage">
         <div class="pointer" aria-hidden="true"></div>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
       </div>
+      <p class="empty-state" hidden>이 지역에는 등록된 일식 맛집이 없어요.</p>
       <p class="place" data-final="카시와">카시와</p>
       <p class="note" data-final="라멘">라멘</p>
       <div class="meta">
         <span class="meta-row hours">11:00-20:00</span>
         <span class="meta-row address">서울 동대문구 휘경로2가길 4</span>
       </div>
-      <button type="button" class="respin" data-target="cat-2">다시 돌리기</button>
+      <div class="actions">
+        <button type="button" class="respin" data-target="cat-2">다시 돌리기</button>
+        <a class="map-link" data-target="cat-2" href="https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%20%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC%20%ED%9C%98%EA%B2%BD%EB%A1%9C2%EA%B0%80%EA%B8%B8%204%20%EC%B9%B4%EC%8B%9C%EC%99%80" target="_blank" rel="noopener">지도에서 보기</a>
+      </div>
     </section>
-<section class="panel" id="cat-3" data-category="양식" data-final-index="5" role="tabpanel" hidden>
+<section class="panel" id="cat-3" data-category="양식" data-cat-index="3" data-day="739882" role="tabpanel" hidden>
       <div class="wheel-stage">
         <div class="pointer" aria-hidden="true"></div>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
       </div>
+      <p class="empty-state" hidden>이 지역에는 등록된 양식 맛집이 없어요.</p>
       <p class="place" data-final="이상한떡볶이집">이상한떡볶이집</p>
       <p class="note" data-final="파스타 · 함박스테이크">파스타 · 함박스테이크</p>
       <div class="meta">
         <span class="meta-row hours">11:00-21:00 (토 휴무)</span>
         <span class="meta-row address">서울 동대문구 휘경로2가길 6</span>
       </div>
-      <button type="button" class="respin" data-target="cat-3">다시 돌리기</button>
+      <div class="actions">
+        <button type="button" class="respin" data-target="cat-3">다시 돌리기</button>
+        <a class="map-link" data-target="cat-3" href="https://map.kakao.com/?q=%EC%84%9C%EC%9A%B8%20%EB%8F%99%EB%8C%80%EB%AC%B8%EA%B5%AC%20%ED%9C%98%EA%B2%BD%EB%A1%9C2%EA%B0%80%EA%B8%B8%206%20%EC%9D%B4%EC%83%81%ED%95%9C%EB%96%A1%EB%B3%B6%EC%9D%B4%EC%A7%91" target="_blank" rel="noopener">지도에서 보기</a>
+      </div>
     </section>
-    <script type="application/json" id="menu-pools">{"한식": [{"name": "송원", "note": "제육볶음 · 된장찌개", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 14"}, {"name": "왕송", "note": "갈비찜 · 찜닭", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 11"}, {"name": "39돈가스", "note": "돈가스", "hours": "10:00-20:30", "address": "서울 동대문구 휘경로2길 5-2"}, {"name": "옹골진치킨", "note": "치킨", "hours": "16:30-01:00", "address": "서울 동대문구 이문로28길 15"}, {"name": "도란도란곱창", "note": "곱창", "hours": "15:00-02:00", "address": "서울 동대문구 휘경로2길 5-10"}, {"name": "이문동 신냉면", "note": "냉면 · 만두", "hours": "10:30-20:00", "address": "서울 동대문구 휘경로 6-8"}, {"name": "차돌풍 외대점", "note": "뚝배기불고기 · 김치찌개", "hours": "12:00-22:30", "address": "서울 동대문구 이문로 108"}, {"name": "두끼 한국외대점", "note": "떡볶이", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 104 지하1층"}, {"name": "신의주찹쌀순대와쭈꾸미", "note": "국밥 · 순댓국", "hours": "10:00-24:00", "address": "서울 동대문구 휘경로 9"}, {"name": "컵짱이야 외대본점", "note": "컵밥 · 닭강정", "hours": "12:00-23:00 (일 휴무)", "address": "서울 동대문구 이문로 96-1"}, {"name": "이문족발", "note": "족발 · 보쌈", "hours": "14:00-24:00 (일 휴무)", "address": "서울 동대문구 휘경로2길 5-12"}, {"name": "일품춘천닭갈비", "note": "닭갈비", "hours": "12:00-24:00", "address": "서울 동대문구 휘경로3길 8"}, {"name": "알촌 경희외대점", "note": "알밥", "hours": "10:00-20:30 (토 휴무)", "address": "서울 동대문구 천장산로7길 10-3"}, {"name": "도읍지", "note": "김치찌개 · 두루치기", "hours": "10:30-21:00 (일 휴무)", "address": "서울 동대문구 회기로21길 38-1"}], "중식": [{"name": "구기우육도삭면", "note": "도삭면", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로 16"}, {"name": "영화장", "note": "짜장면 · 짬뽕", "hours": "11:30-21:00 (월 휴무)", "address": "서울 동대문구 휘경로 3-8"}, {"name": "헤이마오차이 외대점", "note": "마오차이", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로 18"}, {"name": "홍콩반점0410 외대점", "note": "짜장면 · 탕수육", "hours": "10:30-21:00", "address": "서울 동대문구 휘경로 17"}, {"name": "탕화쿵푸 외대점", "note": "마라탕", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로2길 3"}, {"name": "춘리마라탕 외대점", "note": "마라탕", "hours": "10:00-22:00 (토 휴무)", "address": "서울 동대문구 휘경로 14"}, {"name": "국빈", "note": "짜장면 · 짬뽕", "hours": "정보 확인 필요", "address": "서울 동대문구 휘경로5길 6"}, {"name": "촨커", "note": "꿔바로우 · 마라샹궈", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 이문로9길 105"}, {"name": "향미중식당", "note": "마라샹궈 · 동파육", "hours": "11:00-20:00 (일 휴무)", "address": "서울 동대문구 경희대로3길 6"}, {"name": "만이 차이니즈퀴진", "note": "짬뽕 · 짜장면", "hours": "11:00-20:00 (월·일 휴무)", "address": "서울 동대문구 천장산로 47"}], "일식": [{"name": "영카츠", "note": "카츠 · 마제소바", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로 3-13"}, {"name": "마루기", "note": "가츠동 · 규동", "hours": "11:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로28길 16"}, {"name": "우시라멘", "note": "라멘 · 규동", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 88-11"}, {"name": "카시와", "note": "라멘", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로2가길 4"}, {"name": "이상준초밥", "note": "초밥", "hours": "11:00-20:00 (토·일 휴무)", "address": "서울 동대문구 휘경로 12"}, {"name": "고씨네 한국외대점", "note": "카레", "hours": "11:00-20:30", "address": "서울 동대문구 휘경로 16"}, {"name": "기석일호", "note": "카레", "hours": "12:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로17길 39"}, {"name": "가치로아", "note": "카츠 · 우동", "hours": "11:00-21:30", "address": "서울 동대문구 망우로21길 63"}, {"name": "카츠이로하", "note": "카츠", "hours": "11:00-20:30 (일 휴무)", "address": "서울 동대문구 경희대로1가길 8"}, {"name": "모코모코 본점", "note": "소바 · 우동", "hours": "11:00-20:00", "address": "서울 동대문구 회기로 147"}, {"name": "카빙당", "note": "카레 · 돈가스", "hours": "10:00-20:00 (일 휴무)", "address": "서울 동대문구 이문로9가길 35"}], "양식": [{"name": "브릴란테", "note": "파스타 · 피자", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 휘경로 6-8"}, {"name": "샤로스톤", "note": "스테이크", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로2가길 5"}, {"name": "치보", "note": "파스타 · 리조또", "hours": "11:30-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로9길 3"}, {"name": "라구퀸", "note": "파스타", "hours": "11:30-21:30", "address": "서울 동대문구 회기로18길 16"}, {"name": "언니네함바그", "note": "함박스테이크", "hours": "11:00-21:00 (화 휴무)", "address": "서울 동대문구 회기로25길 59"}, {"name": "이상한떡볶이집", "note": "파스타 · 함박스테이크", "hours": "11:00-21:00 (토 휴무)", "address": "서울 동대문구 휘경로2가길 6"}, {"name": "파치", "note": "파스타 · 치킨", "hours": "11:00-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로 38"}, {"name": "비스트로99", "note": "육회 · 파스타", "hours": "17:00-24:00", "address": "서울 동대문구 회기로21길 6"}]}</script>
+    <script type="application/json" id="menu-pools">{"한식": [{"name": "송원", "note": "제육볶음 · 된장찌개", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 14", "area": "정문"}, {"name": "왕송", "note": "갈비찜 · 찜닭", "hours": "10:30-20:30 (토 휴무)", "address": "서울 동대문구 이문로28길 11", "area": "정문"}, {"name": "39돈가스", "note": "돈가스", "hours": "10:00-20:30", "address": "서울 동대문구 휘경로2길 5-2", "area": "후문"}, {"name": "옹골진치킨", "note": "치킨", "hours": "16:30-01:00", "address": "서울 동대문구 이문로28길 15", "area": "정문"}, {"name": "도란도란곱창", "note": "곱창", "hours": "15:00-02:00", "address": "서울 동대문구 휘경로2길 5-10", "area": "후문"}, {"name": "이문동 신냉면", "note": "냉면 · 만두", "hours": "10:30-20:00", "address": "서울 동대문구 휘경로 6-8", "area": "후문"}, {"name": "차돌풍 외대점", "note": "뚝배기불고기 · 김치찌개", "hours": "12:00-22:30", "address": "서울 동대문구 이문로 108", "area": "정문"}, {"name": "두끼 한국외대점", "note": "떡볶이", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 104 지하1층", "area": "정문"}, {"name": "신의주찹쌀순대와쭈꾸미", "note": "국밥 · 순댓국", "hours": "10:00-24:00", "address": "서울 동대문구 휘경로 9", "area": "후문"}, {"name": "컵짱이야 외대본점", "note": "컵밥 · 닭강정", "hours": "12:00-23:00 (일 휴무)", "address": "서울 동대문구 이문로 96-1", "area": "정문"}, {"name": "이문족발", "note": "족발 · 보쌈", "hours": "14:00-24:00 (일 휴무)", "address": "서울 동대문구 휘경로2길 5-12", "area": "후문"}, {"name": "일품춘천닭갈비", "note": "닭갈비", "hours": "12:00-24:00", "address": "서울 동대문구 휘경로3길 8", "area": "후문"}, {"name": "알촌 경희외대점", "note": "알밥", "hours": "10:00-20:30 (토 휴무)", "address": "서울 동대문구 천장산로7길 10-3", "area": "회기"}, {"name": "도읍지", "note": "김치찌개 · 두루치기", "hours": "10:30-21:00 (일 휴무)", "address": "서울 동대문구 회기로21길 38-1", "area": "회기"}], "중식": [{"name": "구기우육도삭면", "note": "도삭면", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로 16", "area": "후문"}, {"name": "영화장", "note": "짜장면 · 짬뽕", "hours": "11:30-21:00 (월 휴무)", "address": "서울 동대문구 휘경로 3-8", "area": "후문"}, {"name": "헤이마오차이 외대점", "note": "마오차이", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로 18", "area": "후문"}, {"name": "홍콩반점0410 외대점", "note": "짜장면 · 탕수육", "hours": "10:30-21:00", "address": "서울 동대문구 휘경로 17", "area": "후문"}, {"name": "탕화쿵푸 외대점", "note": "마라탕", "hours": "11:00-22:00", "address": "서울 동대문구 휘경로2길 3", "area": "후문"}, {"name": "춘리마라탕 외대점", "note": "마라탕", "hours": "10:00-22:00 (토 휴무)", "address": "서울 동대문구 휘경로 14", "area": "후문"}, {"name": "국빈", "note": "짜장면 · 짬뽕", "hours": "정보 확인 필요", "address": "서울 동대문구 휘경로5길 6", "area": "후문"}, {"name": "촨커", "note": "꿔바로우 · 마라샹궈", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 이문로9길 105", "area": "정문"}, {"name": "향미중식당", "note": "마라샹궈 · 동파육", "hours": "11:00-20:00 (일 휴무)", "address": "서울 동대문구 경희대로3길 6", "area": "회기"}, {"name": "만이 차이니즈퀴진", "note": "짬뽕 · 짜장면", "hours": "11:00-20:00 (월·일 휴무)", "address": "서울 동대문구 천장산로 47", "area": "회기"}], "일식": [{"name": "영카츠", "note": "카츠 · 마제소바", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로 3-13", "area": "후문"}, {"name": "마루기", "note": "가츠동 · 규동", "hours": "11:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로28길 16", "area": "정문"}, {"name": "우시라멘", "note": "라멘 · 규동", "hours": "11:00-22:00", "address": "서울 동대문구 이문로 88-11", "area": "정문"}, {"name": "카시와", "note": "라멘", "hours": "11:00-20:00", "address": "서울 동대문구 휘경로2가길 4", "area": "후문"}, {"name": "이상준초밥", "note": "초밥", "hours": "11:00-20:00 (토·일 휴무)", "address": "서울 동대문구 휘경로 12", "area": "후문"}, {"name": "고씨네 한국외대점", "note": "카레", "hours": "11:00-20:30", "address": "서울 동대문구 휘경로 16", "area": "후문"}, {"name": "기석일호", "note": "카레", "hours": "12:00-21:00 (일 휴무)", "address": "서울 동대문구 이문로17길 39", "area": "정문"}, {"name": "가치로아", "note": "카츠 · 우동", "hours": "11:00-21:30", "address": "서울 동대문구 망우로21길 63", "area": "회기"}, {"name": "카츠이로하", "note": "카츠", "hours": "11:00-20:30 (일 휴무)", "address": "서울 동대문구 경희대로1가길 8", "area": "회기"}, {"name": "모코모코 본점", "note": "소바 · 우동", "hours": "11:00-20:00", "address": "서울 동대문구 회기로 147", "area": "회기"}, {"name": "카빙당", "note": "카레 · 돈가스", "hours": "10:00-20:00 (일 휴무)", "address": "서울 동대문구 이문로9가길 35", "area": "정문"}], "양식": [{"name": "브릴란테", "note": "파스타 · 피자", "hours": "11:30-21:30 (일 휴무)", "address": "서울 동대문구 휘경로 6-8", "area": "후문"}, {"name": "샤로스톤", "note": "스테이크", "hours": "11:00-21:00", "address": "서울 동대문구 휘경로2가길 5", "area": "후문"}, {"name": "치보", "note": "파스타 · 리조또", "hours": "11:30-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로9길 3", "area": "회기"}, {"name": "라구퀸", "note": "파스타", "hours": "11:30-21:30", "address": "서울 동대문구 회기로18길 16", "area": "회기"}, {"name": "언니네함바그", "note": "함박스테이크", "hours": "11:00-21:00 (화 휴무)", "address": "서울 동대문구 회기로25길 59", "area": "회기"}, {"name": "이상한떡볶이집", "note": "파스타 · 함박스테이크", "hours": "11:00-21:00 (토 휴무)", "address": "서울 동대문구 휘경로2가길 6", "area": "후문"}, {"name": "파치", "note": "파스타 · 치킨", "hours": "11:00-21:00 (토·일 휴무)", "address": "서울 동대문구 천장산로 38", "area": "회기"}, {"name": "비스트로99", "note": "육회 · 파스타", "hours": "17:00-24:00", "address": "서울 동대문구 회기로21길 6", "area": "회기"}]}</script>
     <footer>
       <p class="provenance">로컬 생성본</p>
-      <p>마지막 생성 2026.09.23 22:11:10 KST</p>
+      <p>마지막 생성 2026.09.23 22:19:45 KST</p>
       <p>장소 정보 출처: <a href="https://hufs-gourmet-map.notion.site/" target="_blank" rel="noopener">외대 맛집 지도</a> (한국외대 이탈리아어과 정서연)</p>
     </footer>
   </main>
@@ -159,6 +192,18 @@
     var pools = JSON.parse(document.getElementById("menu-pools").textContent);
     var palette = ["#7c9eff", "#5f7fd6", "#93b1ff", "#4a63ad"];
     var SVG_NS = "http://www.w3.org/2000/svg";
+    var MEAL_OFFSET = 1;
+    var areaFilter = "all";
+
+    function filteredItems(category) {
+      var items = pools[category];
+      if (areaFilter === "all") return items;
+      return items.filter(function (item) { return item.area === areaFilter; });
+    }
+
+    function kakaoMapUrl(item) {
+      return "https://map.kakao.com/?q=" + encodeURIComponent(item.address + " " + item.name);
+    }
 
     function slicePoint(cx, cy, r, deg) {
       var rad = (deg - 90) * Math.PI / 180;
@@ -195,22 +240,50 @@
       }
     }
 
+    function defaultIndex(panel, items) {
+      var day = parseInt(panel.dataset.day, 10);
+      var catIndex = parseInt(panel.dataset.catIndex, 10);
+      return (day + catIndex * 5 + MEAL_OFFSET * 4) % items.length;
+    }
+
     function spin(panel, targetIndex) {
       if (panel.classList.contains("spinning")) return;
       var category = panel.dataset.category;
-      var items = pools[category];
-      var idx = (typeof targetIndex === "number") ? targetIndex : parseInt(panel.dataset.finalIndex, 10);
+      var items = filteredItems(category);
+      var wheelStage = panel.querySelector(".wheel-stage");
+      var emptyState = panel.querySelector(".empty-state");
       var placeEl = panel.querySelector(".place");
       var noteEl = panel.querySelector(".note");
       var hoursEl = panel.querySelector(".meta .hours");
       var addressEl = panel.querySelector(".meta .address");
+      var metaEl = panel.querySelector(".meta");
+      var actionsEl = panel.querySelector(".actions");
+      var mapLink = panel.querySelector(".map-link");
       var button = panel.querySelector(".respin");
-      var group = panel.querySelector(".wheel-slices");
 
-      if (!panel.dataset.built) {
-        buildWheel(panel, items);
-        panel.dataset.built = "1";
+      if (items.length === 0) {
+        wheelStage.hidden = true;
+        placeEl.hidden = true;
+        noteEl.hidden = true;
+        metaEl.hidden = true;
+        actionsEl.hidden = true;
+        emptyState.hidden = false;
+        return;
       }
+      wheelStage.hidden = false;
+      placeEl.hidden = false;
+      noteEl.hidden = false;
+      metaEl.hidden = false;
+      actionsEl.hidden = false;
+      emptyState.hidden = true;
+
+      var idx = (typeof targetIndex === "number") ? targetIndex : defaultIndex(panel, items);
+      var group = panel.querySelector(".wheel-slices");
+      buildWheel(panel, items);
+      group.dataset.rotation = "0";
+      group.style.transition = "none";
+      group.style.transform = "rotate(0deg)";
+      void group.offsetHeight;
 
       var sliceAngle = 360 / items.length;
       var mid = idx * sliceAngle + sliceAngle / 2;
@@ -234,6 +307,7 @@
         noteEl.textContent = items[idx].note;
         hoursEl.textContent = items[idx].hours || "";
         addressEl.textContent = items[idx].address || "";
+        mapLink.href = kakaoMapUrl(items[idx]);
         panel.classList.remove("spinning");
         panel.classList.add("landed");
         if (button) button.disabled = false;
@@ -254,9 +328,21 @@
     document.querySelectorAll(".respin").forEach(function (button) {
       button.addEventListener("click", function () {
         var panel = document.getElementById(button.dataset.target);
-        var items = pools[panel.dataset.category];
+        var items = filteredItems(panel.dataset.category);
+        if (items.length === 0) return;
         var randomIndex = Math.floor(Math.random() * items.length);
         spin(panel, randomIndex);
+      });
+    });
+
+    document.querySelectorAll(".area-pill").forEach(function (pill) {
+      pill.addEventListener("click", function () {
+        areaFilter = pill.dataset.area;
+        document.querySelectorAll(".area-pill").forEach(function (p) {
+          p.setAttribute("aria-pressed", p === pill ? "true" : "false");
+        });
+        var visiblePanel = document.querySelector(".panel:not([hidden])");
+        if (visiblePanel) spin(visiblePanel);
       });
     });
 

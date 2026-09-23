@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import sys
 import tempfile
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 
@@ -42,6 +43,10 @@ def parse_preview_date(value):
 
 def choose_date(preview_date, generated_at):
     return preview_date if preview_date is not None else generated_at.astimezone(KST).date()
+
+
+def kakao_map_url(address, place_name):
+    return "https://map.kakao.com/?q=" + quote(f"{address} {place_name}")
 
 
 def choose_meal(explicit_meal, generated_at):
@@ -87,23 +92,33 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
         provenance.append(f"커밋 {escape(commit[:7])}")
     provenance_text = " · ".join(provenance) if provenance else "로컬 생성본"
 
+    day_ordinal = target_date.toordinal()
+    areas = data.get("areas", [])
+    area_pills = "\n".join(
+        f'<button class="area-pill" data-area="{escape(a)}" aria-pressed="false">{escape(a)}</button>'
+        for a in areas
+    )
     tabs = "\n".join(
         f'<button class="tab" data-target="cat-{i}" aria-selected="{"true" if i == 0 else "false"}">{escape(p["name"])}</button>'
         for i, p in enumerate(picks)
     )
     panels = "\n".join(
-        f'''<section class="panel" id="cat-{i}" data-category="{escape(p['name'])}" data-final-index="{p['index']}" role="tabpanel" {"" if i == 0 else "hidden"}>
+        f'''<section class="panel" id="cat-{i}" data-category="{escape(p['name'])}" data-cat-index="{i}" data-day="{day_ordinal}" role="tabpanel" {"" if i == 0 else "hidden"}>
       <div class="wheel-stage">
         <div class="pointer" aria-hidden="true"></div>
         <svg class="wheel" viewBox="0 0 300 300" aria-hidden="true"><g class="wheel-slices"></g></svg>
       </div>
+      <p class="empty-state" hidden>이 지역에는 등록된 {escape(p['name'])} 맛집이 없어요.</p>
       <p class="place" data-final="{escape(p['place'])}">{escape(p['place'])}</p>
       <p class="note" data-final="{escape(p['note'])}">{escape(p['note'])}</p>
       <div class="meta">
         <span class="meta-row hours">{escape(p['hours'])}</span>
         <span class="meta-row address">{escape(p['address'])}</span>
       </div>
-      <button type="button" class="respin" data-target="cat-{i}">다시 돌리기</button>
+      <div class="actions">
+        <button type="button" class="respin" data-target="cat-{i}">다시 돌리기</button>
+        <a class="map-link" data-target="cat-{i}" href="{escape(kakao_map_url(p['address'], p['place']))}" target="_blank" rel="noopener">지도에서 보기</a>
+      </div>
     </section>'''
         for i, p in enumerate(picks)
     )
@@ -153,8 +168,14 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
     .tab {{ flex: 1; font: inherit; font-size: 13.5px; padding: 9px 0; border-radius: 9px;
       border: none; background: transparent; color: var(--muted); cursor: pointer; }}
     .tab[aria-selected="true"] {{ background: var(--accent); color: #0c0d10; font-weight: 600; }}
+    .area-filter {{ display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }}
+    .area-pill {{ font: inherit; font-size: 12.5px; padding: 6px 14px; border-radius: 100px;
+      border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; }}
+    .area-pill[aria-pressed="true"] {{ border-color: var(--accent); color: var(--accent); font-weight: 600; }}
+    .area-note {{ font-size: 11px; color: var(--muted); margin: -14px 0 20px; }}
     .panel {{ background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
       padding: 30px 24px 26px; }}
+    .empty-state {{ color: var(--muted); font-size: 14px; padding: 40px 10px; margin: 0; }}
     .wheel-stage {{ position: relative; width: 208px; height: 208px; margin: 0 auto 24px; }}
     .wheel {{ width: 100%; height: 100%; display: block; }}
     .wheel-slices {{ transform-origin: 150px 150px; }}
@@ -174,9 +195,13 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
     @keyframes settle {{ 0% {{ transform: scale(1.08); }} 100% {{ transform: scale(1); }} }}
     .panel.landed .place {{ animation: settle .3s ease; }}
     .panel.spinning .place, .panel.spinning .note, .panel.spinning .meta {{ opacity: .2; }}
-    .respin {{ font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
-      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }}
-    .respin:hover {{ border-color: var(--accent); color: var(--accent); }}
+    .actions {{ display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; transition: opacity .2s ease; }}
+    .actions[hidden], .meta[hidden] {{ display: none; }}
+    .panel.spinning .actions {{ opacity: .2; }}
+    .respin, .map-link {{ font: inherit; font-size: 13px; padding: 9px 20px; border-radius: 100px;
+      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer;
+      text-decoration: none; display: inline-block; }}
+    .respin:hover, .map-link:hover {{ border-color: var(--accent); color: var(--accent); }}
     .respin:disabled {{ opacity: .4; cursor: default; }}
     footer {{ margin-top: 22px; font-size: 11.5px; line-height: 1.8; color: var(--muted); }}
     footer p {{ margin: 2px 0; }}
@@ -207,6 +232,11 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
     <div class="tabs" role="tablist" aria-label="카테고리 선택">
 {tabs}
     </div>
+    <div class="area-filter" role="group" aria-label="지역 필터">
+      <button class="area-pill" data-area="all" aria-pressed="true">전체</button>
+{area_pills}
+    </div>
+    <p class="area-note">지역은 주소를 기준으로 정문·후문·회기로 임의 분류했어요.</p>
 {panels}
     <script type="application/json" id="menu-pools">{pools_json}</script>
     <footer>
@@ -219,6 +249,18 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
     var pools = JSON.parse(document.getElementById("menu-pools").textContent);
     var palette = ["#7c9eff", "#5f7fd6", "#93b1ff", "#4a63ad"];
     var SVG_NS = "http://www.w3.org/2000/svg";
+    var MEAL_OFFSET = {MEAL_OFFSETS[meal]};
+    var areaFilter = "all";
+
+    function filteredItems(category) {{
+      var items = pools[category];
+      if (areaFilter === "all") return items;
+      return items.filter(function (item) {{ return item.area === areaFilter; }});
+    }}
+
+    function kakaoMapUrl(item) {{
+      return "https://map.kakao.com/?q=" + encodeURIComponent(item.address + " " + item.name);
+    }}
 
     function slicePoint(cx, cy, r, deg) {{
       var rad = (deg - 90) * Math.PI / 180;
@@ -255,22 +297,50 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
       }}
     }}
 
+    function defaultIndex(panel, items) {{
+      var day = parseInt(panel.dataset.day, 10);
+      var catIndex = parseInt(panel.dataset.catIndex, 10);
+      return (day + catIndex * 5 + MEAL_OFFSET * 4) % items.length;
+    }}
+
     function spin(panel, targetIndex) {{
       if (panel.classList.contains("spinning")) return;
       var category = panel.dataset.category;
-      var items = pools[category];
-      var idx = (typeof targetIndex === "number") ? targetIndex : parseInt(panel.dataset.finalIndex, 10);
+      var items = filteredItems(category);
+      var wheelStage = panel.querySelector(".wheel-stage");
+      var emptyState = panel.querySelector(".empty-state");
       var placeEl = panel.querySelector(".place");
       var noteEl = panel.querySelector(".note");
       var hoursEl = panel.querySelector(".meta .hours");
       var addressEl = panel.querySelector(".meta .address");
+      var metaEl = panel.querySelector(".meta");
+      var actionsEl = panel.querySelector(".actions");
+      var mapLink = panel.querySelector(".map-link");
       var button = panel.querySelector(".respin");
-      var group = panel.querySelector(".wheel-slices");
 
-      if (!panel.dataset.built) {{
-        buildWheel(panel, items);
-        panel.dataset.built = "1";
+      if (items.length === 0) {{
+        wheelStage.hidden = true;
+        placeEl.hidden = true;
+        noteEl.hidden = true;
+        metaEl.hidden = true;
+        actionsEl.hidden = true;
+        emptyState.hidden = false;
+        return;
       }}
+      wheelStage.hidden = false;
+      placeEl.hidden = false;
+      noteEl.hidden = false;
+      metaEl.hidden = false;
+      actionsEl.hidden = false;
+      emptyState.hidden = true;
+
+      var idx = (typeof targetIndex === "number") ? targetIndex : defaultIndex(panel, items);
+      var group = panel.querySelector(".wheel-slices");
+      buildWheel(panel, items);
+      group.dataset.rotation = "0";
+      group.style.transition = "none";
+      group.style.transform = "rotate(0deg)";
+      void group.offsetHeight;
 
       var sliceAngle = 360 / items.length;
       var mid = idx * sliceAngle + sliceAngle / 2;
@@ -294,6 +364,7 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
         noteEl.textContent = items[idx].note;
         hoursEl.textContent = items[idx].hours || "";
         addressEl.textContent = items[idx].address || "";
+        mapLink.href = kakaoMapUrl(items[idx]);
         panel.classList.remove("spinning");
         panel.classList.add("landed");
         if (button) button.disabled = false;
@@ -314,9 +385,21 @@ def generate_html(data, target_date, generated_at, meal, is_preview=False, envir
     document.querySelectorAll(".respin").forEach(function (button) {{
       button.addEventListener("click", function () {{
         var panel = document.getElementById(button.dataset.target);
-        var items = pools[panel.dataset.category];
+        var items = filteredItems(panel.dataset.category);
+        if (items.length === 0) return;
         var randomIndex = Math.floor(Math.random() * items.length);
         spin(panel, randomIndex);
+      }});
+    }});
+
+    document.querySelectorAll(".area-pill").forEach(function (pill) {{
+      pill.addEventListener("click", function () {{
+        areaFilter = pill.dataset.area;
+        document.querySelectorAll(".area-pill").forEach(function (p) {{
+          p.setAttribute("aria-pressed", p === pill ? "true" : "false");
+        }});
+        var visiblePanel = document.querySelector(".panel:not([hidden])");
+        if (visiblePanel) spin(visiblePanel);
       }});
     }});
 
